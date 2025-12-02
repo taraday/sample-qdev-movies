@@ -69,4 +69,59 @@ public class MovieService {
         }
         return Optional.ofNullable(movieMap.get(id));
     }
+
+    /**
+     * Search movies based on provided criteria.
+     * Supports filtering by name (partial match), id (exact match), and genre (partial match).
+     * All text searches are case-insensitive.
+     * 
+     * @param name Movie name to search for (partial match, case-insensitive)
+     * @param id Movie ID to search for (exact match)
+     * @param genre Movie genre to search for (partial match, case-insensitive)
+     * @return List of movies matching the search criteria
+     */
+    public List<Movie> searchMovies(String name, Long id, String genre) {
+        logger.info("Searching movies with criteria - name: {}, id: {}, genre: {}", name, id, genre);
+        
+        List<Movie> results = new ArrayList<>();
+        
+        // If all parameters are null or empty, return empty list
+        if (isEmptyString(name) && id == null && isEmptyString(genre)) {
+            logger.warn("All search parameters are empty, returning empty results");
+            return results;
+        }
+        
+        for (Movie movie : movies) {
+            boolean matches = true;
+            
+            // Check name criteria (partial match, case-insensitive)
+            if (!isEmptyString(name)) {
+                matches = matches && movie.getMovieName().toLowerCase().contains(name.toLowerCase().trim());
+            }
+            
+            // Check id criteria (exact match)
+            if (id != null && id > 0) {
+                matches = matches && movie.getId() == id;
+            }
+            
+            // Check genre criteria (partial match, case-insensitive)
+            if (!isEmptyString(genre)) {
+                matches = matches && movie.getGenre().toLowerCase().contains(genre.toLowerCase().trim());
+            }
+            
+            if (matches) {
+                results.add(movie);
+            }
+        }
+        
+        logger.info("Found {} movies matching search criteria", results.size());
+        return results;
+    }
+    
+    /**
+     * Helper method to check if a string is null, empty, or contains only whitespace
+     */
+    private boolean isEmptyString(String str) {
+        return str == null || str.trim().isEmpty();
+    }
 }
